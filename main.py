@@ -4,10 +4,9 @@ import machine, onewire, ds18x20, time
 led = machine.Pin(25, machine.Pin.OUT)
 ds_pin = machine.Pin(4)
 ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
-
 roms = ds_sensor.scan()
 print('Found DS devices: ', roms)
-temp_sensor = roms[0]
+relay = machine.Pin(26, Pin.OUT)
 
 class Timer:
   def __init__(self):
@@ -24,7 +23,10 @@ class Timer:
     # reset timer
     self.start_time = 0
     self.delta_t = 0
-class BrewingKettle:
+
+test_temp = 40
+
+class Kettle:
   def __init__(self, sensor_index):
     self.sensor_index = sensor_index
     self.temp = 0
@@ -32,8 +34,6 @@ class BrewingKettle:
     self.heat = 0 # 0: off, 1: keep temp, 2: ramp up temp to target_temp
     self.heating_state = 0 # 0:heating off, 1: heating on
     self.hysteresis = 2
-  def get_target_temp(self):
-    return self.target_temp
   def set_target_temp(self, target_temp):
     self.target_temp = target_temp
     if target_temp > self.temp:
@@ -45,31 +45,30 @@ class BrewingKettle:
   def read_temp_sensor(self):
     ds_sensor.convert_temp()
     time.sleep_ms(750)
-    self.temp = ds_sensor.read_temp(roms[self.sensor_index])
+    self.temp = ds_sensor.read_temp(roms[self.sensor_index]) + test_temp
   def update_heating(self):
     if self.temp < self.target_temp:
       if self.heat == 1 and self.temp > self.target_temp-self.hysteresis:
         #switch off heating
         self.heating_state = 0
-        self.temp = self.temp-1
       else:
         #switch on heating
         self.heat = 2
         self.heating_state = 1
-        self.temp = self.temp+1
     else:
       #switch off heating
       self.heat = 1
       self.heating_state = 0
-      self.temp = self.temp-1
+    
 
-brewing_kettle = BrewingKettle(0) 
-brewing_kettle.set_target_temp(67)
+kettle = Kettle(0) 
+kettle.set_target_temp(67)
 
 timer = Timer()
 timer.start()
 
 while True:
+
   #conn, addr = s.accept()
   #print('Got a connection from %s' % str(addr))
   #request = conn.recv(1024)
@@ -92,10 +91,14 @@ while True:
   #conn.close()
 
   timer.update()
-  brewing_kettle.read_temp_sensor()
-  brewing_kettle.update_heating()
-  print("Current brewing kettle temperature: " + str(brewing_kettle.temp) + "°C")
-  #print("Heating: " + str(brewing_kettle.heating_state))
+  kettle.read_temp_sensor()
+  kettle.update_heating()
+  if kettle.heating_state == 1:
+    relay.value(0)
+  else:
+    relay.value(1)
+  print("Current kettle temperature: " + str(kettle.temp) + "°C")
+  #print("Heating: " + str(kettle.heating_state))
   # coole Lightshow
   led.value(1)
   time.sleep_ms(250)
@@ -106,5 +109,4 @@ while True:
   led.value(0)
   time.sleep(1)
   
-
 
