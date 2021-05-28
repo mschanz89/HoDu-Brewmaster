@@ -116,10 +116,10 @@ while True:
   oled.text('Set temp: {}'.format(temp_list[level_index]), 0, 10)
   kettle.update_heating()
   if kettle.heating_state == 1:
-    relay.value(0)
+    rel1.value(0)
     oled.text('Heating: ON', 0, 20)
   else:
-    relay.value(1)
+    rel1.value(1)
     oled.text('Heating: OFF', 0, 20)
 
   oled.text('Time: {}'.format(timer.delta_t), 0, 30)
