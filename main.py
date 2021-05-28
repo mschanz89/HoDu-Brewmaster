@@ -112,7 +112,7 @@ while True:
   oled.fill(0)
   timer.update()
   kettle.read_temp_sensor()
-  oled.text('Temp: {}'.format(kettle.temp), 0, 0)
+  oled.text('Temp: {0:5.2f}C'.format(kettle.temp), 0, 0)
   oled.text('Set temp: {}'.format(temp_list[level_index]), 0, 10)
   kettle.update_heating()
   if kettle.heating_state == 1:
