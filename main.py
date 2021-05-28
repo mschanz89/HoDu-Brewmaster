@@ -49,6 +49,9 @@ class Kettle:
       self.heat = 1
       self.heating_state = 0
 
+def zfill(s, width):
+  return '{:0>{w}}'.format(s, w=width)
+
 def web_page():
   html = """<html><head> <title>Brauschlampe Hardt!</title> <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,"> <style>html{font-family: Helvetica; display:inline-block; margin: 0px auto; text-align: center;}
@@ -113,7 +116,7 @@ while True:
   timer.update()
   kettle.read_temp_sensor()
   oled.text('Temp: {0:5.2f}C'.format(kettle.temp), 0, 0)
-  oled.text('Set temp: {}'.format(temp_list[level_index]), 0, 10)
+  oled.text('Set temp: {}C'.format(temp_list[level_index]), 0, 10)
   kettle.update_heating()
   if kettle.heating_state == 1:
     rel1.value(0)
@@ -122,7 +125,8 @@ while True:
     rel1.value(1)
     oled.text('Heating: OFF', 0, 20)
 
-  oled.text('Time: {}'.format(timer.delta_t), 0, 30)
+  tms = divmod(timer.delta_t,60)
+  oled.text('Time: {0}:{1}'.format(zfill(str(tms[0]),2),zfill(str(tms[1]),2)), 0, 30)
 
   oled.show()
   

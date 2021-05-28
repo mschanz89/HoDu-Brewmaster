@@ -2,7 +2,7 @@
 # MIT license; Copyright (c) 2016 Damien P. George
 
 import _onewire as _ow
-
+import time
 
 class OneWireError(Exception):
     pass
@@ -19,6 +19,7 @@ class OneWire:
 
     def reset(self, required=False):
         reset = _ow.reset(self.pin)
+        time.sleep_ms(150)
         if required and not reset:
             raise OneWireError
         return reset

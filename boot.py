@@ -4,7 +4,7 @@ except:
   import socket
 
 from machine import Pin, SoftI2C
-import network, onewire, ds18x20, time, sh1106 
+import network, onewire_a, ds18x20_a, time, sh1106
 
 import esp
 esp.osdebug(None)
@@ -45,7 +45,7 @@ rel2 = Pin(27, Pin.OUT)
 # init sensors
 ds_init = Pin(19, Pin.OUT)
 ds_init.value(1)
-ds_sensor = ds18x20.DS18X20(onewire.OneWire(Pin(19)))
+ds_sensor = ds18x20_a.DS18X20(onewire_a.OneWire(Pin(19)))
 time.sleep_ms(2000)
 oled.text('DS Scan', 0, 30)
 oled.show()
@@ -53,5 +53,5 @@ oled.show()
 roms = ds_sensor.scan()
 time.sleep_ms(2000)
 print('Found DS devices: ', roms)
-oled.text(str(roms), 0, 40)
+oled.text('{} sensors found'.format(len(roms)), 0, 40)
 oled.show()
