@@ -33,7 +33,7 @@ class Kettle:
     self.heat = heat
   def read_temp_sensor(self):
     ds_sensor.convert_temp()
-    time.sleep_ms(1000)
+    time.sleep_ms(100)
     self.temp = ds_sensor.read_temp(roms[self.sensor_index])
   def update_heating(self):
     if self.temp < self.target_temp:

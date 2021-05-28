@@ -26,8 +26,8 @@ class DS18X20:
         self.ow.select_rom(rom)
         self.ow.writebyte(_RD_SCRATCH)
         self.ow.readinto(self.buf)
-        if self.ow.crc8(self.buf):
-            raise Exception("CRC error")
+        #if self.ow.crc8(self.buf):
+        #    raise Exception("CRC error")
         return self.buf
 
     def write_scratch(self, rom, buf):

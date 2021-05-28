@@ -19,9 +19,8 @@ class OneWire:
 
     def reset(self, required=False):
         reset = _ow.reset(self.pin)
-        time.sleep_ms(150)
-        if required and not reset:
-            raise OneWireError
+        #if required and not reset:
+        #    raise OneWireError
         return reset
 
     def readbit(self):
