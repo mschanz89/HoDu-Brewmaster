@@ -3,7 +3,7 @@ try:
 except:
   import socket
 
-from machine import Pin, SoftI2C
+from machine import Pin, SoftI2C, ADC
 import network, onewire_a, ds18x20_a, time, sh1106
 
 import esp
@@ -20,7 +20,7 @@ oled.text('Booting ...', 0, 0)
 oled.show()
 
 # init network
-ssid = 'Brauschlampe'
+ssid = 'Brautomatic'
 password = '123456789'
 
 ap = network.WLAN(network.AP_IF)
@@ -35,23 +35,29 @@ oled.text('Network OK', 0, 10)
 oled.text(ap.ifconfig()[0], 0, 20)
 oled.show()
 
-# init stupid LED
-led = Pin(25, Pin.OUT)
+# init buzzer
+buzz = Pin(2, Pin.OUT)
 
 # init relais
-rel1 = Pin(26, Pin.OUT)
+rel1 = Pin(4, Pin.OUT)
+rel1.value(0)
 rel2 = Pin(27, Pin.OUT)
+rel2.value(0)
+
+# init buttons
+men = ADC(Pin(34))
+men.atten(ADC.ATTN_11DB)
 
 # init sensors
 ds_init = Pin(19, Pin.OUT)
 ds_init.value(1)
 ds_sensor = ds18x20_a.DS18X20(onewire_a.OneWire(Pin(19)))
-time.sleep_ms(2000)
+time.sleep_ms(1000)
 oled.text('DS Scan', 0, 30)
 oled.show()
 
 roms = ds_sensor.scan()
-time.sleep_ms(2000)
+time.sleep_ms(1000)
 print('Found DS devices: ', roms)
 oled.text('{} sensors found'.format(len(roms)), 0, 40)
 oled.show()
