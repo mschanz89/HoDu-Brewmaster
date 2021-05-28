@@ -3,8 +3,8 @@ try:
 except:
   import socket
 
-import network
-from machine import Pin
+from machine import Pin, SoftI2C
+import network, onewire, ds18x20, time, sh1106 
 
 import esp
 esp.osdebug(None)
@@ -12,6 +12,14 @@ esp.osdebug(None)
 import gc
 gc.collect()
 
+# init display
+i2c = SoftI2C(scl=Pin(22), sda=Pin(21))
+oled = sh1106.SH1106_I2C(128, 64, i2c, None, 0x3c)
+oled.rotate(True)
+oled.text('Booting ...', 0, 0)
+oled.show()
+
+# init network
 ssid = 'Brauschlampe'
 password = '123456789'
 
@@ -22,26 +30,23 @@ ap.config(essid=ssid, password=password)
 while ap.active() == False:
   pass
 
-print('Connection successful')
 print(ap.ifconfig())
+oled.text('Network OK', 0, 10)
+oled.text(ap.ifconfig()[0], 0, 20)
+oled.show()
 
-schlampe = Pin(18, Pin.OUT)
-schlampe.value(0)
+# init stupid LED
+led = Pin(25, Pin.OUT)
 
-def web_page():
-  html = """<html><head> <title>Brauschlampe Hardt!</title> <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:,"> <style>html{font-family: Helvetica; display:inline-block; margin: 0px auto; text-align: center;}
-  h1{color: #0F3376; padding: 2vh;}p{font-size: 1.5rem;}.button{display: inline-block; background-color: #13b002; border: none; 
-  border-radius: 4px; color: white; padding: 14px 20px; text-decoration: none; font-size: 15px; margin: 2px; cursor: pointer;}
-  .button2{background-color: #b50000;}.button3{background-color: #a8a8a8;}</style></head>
-  <body>
-  <h1>Brauschlampe 1.0</h1>
-  <p><a href="/?schlampe=on"><button class="button">PNEIS ON</button></a></p>
-  <p><a href="/?schlampe=off"><button class="button button2">STOP</button></a></p>
-  </body></html>"""
-  return html
+# init relais
+rel1 = Pin(26, Pin.OUT)
+rel2 = Pin(27, Pin.OUT)
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind(('', 80))
-s.listen(5)
-
+# init sensors
+ds_pin = Pin(12)
+ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
+roms = ds_sensor.scan()
+print('Found DS devices: ', roms)
+oled.text('DS Scan', 0, 30)
+oled.text(str(roms), 0, 40)
+oled.show()

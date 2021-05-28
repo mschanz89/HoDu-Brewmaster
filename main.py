@@ -1,27 +1,3 @@
-
-
-
-import machine, onewire, ds18x20, time
-from machine import Pin, I2C
-import sh1106
-from time import sleep
-
-i2c = I2C(scl=Pin(22), sda=Pin(21))
-
-oled_width = 128
-oled_height = 64
-oled = sh1106.SH1106_I2C(oled_width, oled_height, i2c, None, 0x3c)
-oled.rotate(True)
-
-led = machine.Pin(25, machine.Pin.OUT)
-
-ds_pin = machine.Pin(12)
-ds_sensor = ds18x20.DS18X20(onewire.OneWire(ds_pin))
-roms = ds_sensor.scan()
-print('Found DS devices: ', roms)
-relay = machine.Pin(26, Pin.OUT)
-
-
 class Timer:
   def __init__(self):
     self.start_time = 0
@@ -72,27 +48,42 @@ class Kettle:
       #switch off heating
       self.heat = 1
       self.heating_state = 0
-    
+
+def web_page():
+  html = """<html><head> <title>Brauschlampe Hardt!</title> <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,"> <style>html{font-family: Helvetica; display:inline-block; margin: 0px auto; text-align: center;}
+  h1{color: #0F3376; padding: 2vh;}p{font-size: 1.5rem;}.button{display: inline-block; background-color: #13b002; border: none; 
+  border-radius: 4px; color: white; padding: 14px 20px; text-decoration: none; font-size: 15px; margin: 2px; cursor: pointer;}
+  .button2{background-color: #b50000;}.button3{background-color: #a8a8a8;}</style></head>
+  <body>
+  <h1>Brauschlampe 1.0</h1>
+  <p><a href="/?schlampe=on"><button class="button">PNEIS ON</button></a></p>
+  <p><a href="/?schlampe=off"><button class="button button2">STOP</button></a></p>
+  </body></html>"""
+  return html
 
 kettle = Kettle(0) 
 
 timer = Timer()
 timer.start()
 
-
 # Initialisiere Rasten
 temp_list = [55, 62, 67, 72, 78]
 duration_list = [15, 15, 30, 30, 15]
 if len(temp_list) != len(duration_list):
   oled.fill(0)
-  oled.text("Error:", 0, 0)
-  oled.text("Unequal list of", 0, 10)
-  oled.text("temperatures and", 0, 20)
-  oled.text("durations", 0, 30)
+  oled.text('Error:', 0, 0)
+  oled.text('Unequal list of', 0, 10)
+  oled.text('temperatures and', 0, 20)
+  oled.text('durations', 0, 30)
   oled.show()
   time.sleep(600)
 level_index = 0
 kettle.set_target_temp(temp_list[level_index])
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(('', 80))
+s.listen(5)
 
 while True:
 
@@ -121,17 +112,17 @@ while True:
   oled.fill(0)
   timer.update()
   kettle.read_temp_sensor()
-  oled.text("Temp: " + str(kettle.temp), 0, 0)
-  oled.text("Set temp: " + str(temp_list[level_index]), 0, 10)
+  oled.text('Temp: {}'.format(kettle.temp), 0, 0)
+  oled.text('Set temp: {}'.format(temp_list[level_index]), 0, 10)
   kettle.update_heating()
   if kettle.heating_state == 1:
     relay.value(0)
-    oled.text("Heating: ON", 0, 20)
+    oled.text('Heating: ON', 0, 20)
   else:
     relay.value(1)
-    oled.text("Heating: OFF", 0, 20)
+    oled.text('Heating: OFF', 0, 20)
 
-  oled.text("Time: " + str(timer.delta_t), 0, 30)
+  oled.text('Time: {}'.format(timer.delta_t), 0, 30)
 
   oled.show()
   
