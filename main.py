@@ -20,20 +20,14 @@ class Kettle:
     self.sensor_index = sensor_index
     self.temp, self.ttemp = 0, 30
     self.target_temp = 0
-    self.heat = 0 # 0: off, 1: keep temp, 2: ramp up temp to target_temp
-    self.heating_state = 0 # 0:heating off, 1: heating on
+    self.heat = 0 # 0: off, 1: keep temp, 2: heat up to target_temp
+    self.heating_state = 0 # 0:heating off, 1: heating 1/2 on, 2: heating 2/2 on
     self.hysteresis = 2
 
   def set_target_temp(self, target_temp):
     self.target_temp = target_temp
     if target_temp > self.temp:
       self.heat = 2
-
-  def set_heating_state(self, heating_state):
-    self.heating_state = heating_state
-
-  def set_heat(self, heat):
-    self.heat = heat
 
   def read_temp_sensor(self):
     ds_sensor.convert_temp()
@@ -50,10 +44,13 @@ class Kettle:
       if self.heat == 1 and self.temp > self.target_temp-self.hysteresis:
         #switch off heating
         self.heating_state = 0
+      elif self.heat == 2 and self.temp > self.target_temp-self.hysteresis:
+        #reduce heating to half power to prevent overheating
+        self.heating_state = 1
       else:
         #switch on heating
         self.heat = 2
-        self.heating_state = 1
+        self.heating_state = 2
     else:
       #switch off heating
       self.heat = 1
@@ -152,9 +149,15 @@ if __name__ == '__main__':
       oled.text('Soll: {0:5.2f}'.format(ttemp), 0, 30)
       if kettle.heating_state == 1:
         rel1.value(1)
-        oled.text('Heizung: AN', 0, 40)
+        rel2.value(0)
+        oled.text('Heizung: 1/2 AN', 0, 40)
+      elif kettle.heating_state == 2:
+        rel1.value(1)
+        rel2.value(1)
+        oled.text('Heizung: 2/2 AN', 0, 40)
       else:
         rel1.value(0)
+        rel2.value(0)
         oled.text('Heizung: AUS', 0, 40)
         if start_rast == False:
           timer.start()
