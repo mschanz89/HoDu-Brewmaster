@@ -61,13 +61,21 @@ def zfill(s, width):
 
 def read_men():
   ad = men.read()
-  if ad > 2300 and ad < 2500:
+  # Plus
+  #if ad > 2300 and ad < 2500:
+  if ad > 1410 and ad < 1580:
     return 1
-  elif ad > 3700 and ad < 3900:
+  # Minus
+  #elif ad > 3700 and ad < 3900:
+  elif ad > 1000 and ad < 1400:
     return 2
-  elif ad > 4050:
+  # Menu
+  #elif ad > 4050:
+  elif ad > 1690 and ad < 1780:
     return 3
-  elif ad > 3100 and ad < 3450:
+  # Select
+  #elif ad > 3100 and ad < 3450:
+  elif ad > 1590 and ad < 1680:
     return 4
 
 if __name__ == '__main__':
@@ -96,12 +104,14 @@ if __name__ == '__main__':
       oled.fill(0)
       oled.text('BRAUSCHLAMPE 1.0', 0, 0)
       oled.text('Set time:', 0, 20)
-      oled.text('minutes', 20, 30)
+      oled.text('minutes', 25, 30)
       if read_men() == 1:
         ttime += 1
+        time.sleep_ms(50)
       elif read_men() == 2:
         if ttime > 0:
           ttime -= 1
+          time.sleep_ms(50)
       elif read_men() == 3:
         l_ttime = True
         l_men, l_ttemp, l_brew = False, False, False
@@ -124,9 +134,11 @@ if __name__ == '__main__':
       if read_men() == 1:
         if ttemp < 105:
           ttemp += 1
+          time.sleep_ms(50)
       elif read_men() == 2:
         if ttemp > 30:
           ttemp -= 1
+          time.sleep_ms(50)
       elif read_men() == 3:
         l_ttemp = True
         l_men = False
